@@ -1,0 +1,323 @@
+# Autonomous Driving Safety Analyst — Ingestion Pipelines
+
+RAG system for autonomous driving safety questions, grounded in YouTube video transcripts and ISO 26262 / ISO 21448 (SOTIF) / ISO 8800 standards.
+
+---
+![Overview Diagram](images/Overview.png)
+## Project structure
+
+```
+Autonomous_Driving_Safety_Analyst/
+│
+├── config.py                    # Centralised settings (loaded from .env)
+├── ingest_all.py                # Master runner — executes both pipelines
+├── requirements.txt
+├── .env.example                 # Copy to .env and fill in your keys
+│
+├── ingestion/
+│   ├── video_ingestion.py        # YouTube/local transcripts → Chroma video DB
+│   ├── standards_ingestion.py    # ISO/docs → Chroma standards DB
+│   └── whisper_transcription.py  # Optional local Whisper transcription helper
+│
+├── agent/                        # LangChain/OpenAI + local model orchestration
+│
+├── utils/
+│   └── db_inspector.py         # Inspect & test both vector DBs
+│
+├── standards_pdfs/              # Place your ISO PDF files here
+│   ├── iso_26262_part1.pdf
+│   ├── iso_26262_part4.pdf
+│   ├── iso_21448_sotif.pdf
+│   └── iso_8800.pdf
+│
+└── vectordb/                    # Auto-created by Chroma
+    ├── video_db/
+    └── standards_db/
+```
+
+---
+
+## Setup
+
+### 1. Install dependencies
+
+```bash
+python -m venv .venv
+source .venv/bin/activate        # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+### 2. Configure environment
+
+```bash
+cp .env.example .env
+# Edit .env and add at least OPENAI_API_KEY
+```
+
+Notes:
+- `OPENAI_API_KEY` is required for OpenAI reasoning, OpenAI embeddings, and OpenAI TTS.
+- `LANGCHAIN_API_KEY` is optional and only needed if you want LangSmith tracing.
+
+### 3. Add ISO standard PDFs
+
+Create the `standards_pdfs/` directory and place your PDF files inside.
+The expected filenames are listed in `ingestion/standards_ingestion.py` under `STANDARD_DEFINITIONS`.
+Any PDF not in the definition map will still be ingested with generic metadata.
+
+```bash
+mkdir standards_pdfs
+# Copy your PDFs here:
+# iso_26262_part1.pdf, iso_26262_part4.pdf, iso_21448_sotif.pdf, iso_8800.pdf ...
+```
+
+---
+
+## Running the ingestion
+
+### Ingest everything (videos + standards)
+
+```bash
+python ingest_all.py
+```
+
+### Ingest only one pipeline
+
+```bash
+python ingest_all.py --only videos
+python ingest_all.py --only standards
+```
+
+### Reset and re-ingest from scratch
+
+```bash
+python ingest_all.py --reset
+```
+
+### Ingest a single video from the CLI
+
+```bash
+python -m ingestion.video_ingestion \
+  --url "https://www.youtube.com/watch?v=xyz" \
+  --channel "Waymo" \
+  --category "perception"
+```
+
+### Ingest specific standard PDFs
+
+```bash
+python -m ingestion.standards_ingestion \
+  --pdf-dir ./standards_pdfs \
+  --files iso_26262_part4.pdf iso_21448_sotif.pdf
+```
+
+---
+
+## Inspecting the databases
+
+```bash
+# Print chunk counts for both DBs
+python utils/db_inspector.py --stats
+
+# Search the video DB
+python utils/db_inspector.py --db videos --query "sensor fusion in fog"
+
+# Search the standards DB
+python utils/db_inspector.py --db standards --query "ASIL decomposition hardware"
+
+# Filter standards search to a specific standard
+python utils/db_inspector.py --db standards \
+  --query "validation of ML models" \
+  --filter "ISO 8800"
+```
+
+---
+
+## Optional voice output
+
+![Voice Output Diagram](images/Voice_Output.png)
+The terminal agent can save each answer as fixed-voice audio for local testing.
+This is disabled by default. Voice output uses OpenAI TTS. Enable it in `.env`:
+
+```bash
+TTS_ENABLED=true
+TTS_MODEL=tts-1
+TTS_VOICE=alloy
+TTS_OUTPUT_DIR=./outputs/tts
+TTS_AUTOPLAY=false
+```
+
+On macOS, set `TTS_AUTOPLAY=true` to play the generated audio automatically
+after each answer. Audio files are saved under `outputs/`, which is ignored by
+git.
+
+The voice is controlled by the project owner in `.env`; users do not choose or
+upload voices in the current version.
+
+---
+
+## Running the web app
+
+The project includes a Streamlit app with four workflows:
+![Analysis Modes Diagram](images/Modes.png)
+
+- Scenario Analysis
+- Item Safety Case
+- Standards Q&A
+- Dataset / AI Safety Review
+
+Run it locally:
+
+```bash
+source .venv/bin/activate
+streamlit run app.py
+```
+
+Then open:
+
+```text
+http://127.0.0.1:8501
+```
+
+### Optional open-source draft model
+
+The app includes a sidebar model selector:
+![Models Diagram](images/Models.png)
+![Architecture Diagram](images/OpenAi_Architecture.png)
+![Architecture Diagram](images/Local_Base_Model.png)
+![Architecture Diagram](images/Lora_Model.png)
+
+
+- `OpenAI - advanced analysis`
+- `Local Qwen - before fine-tuning`
+- `Local Qwen - after LoRA fine-tuning`
+
+The pre-fine-tuning local mode expects an Ollama-compatible local model by
+default. It is intended for quick draft answers, not final engineering review.
+This mode uses a separate local standards-only Chroma DB, so it does not
+overwrite the OpenAI embedding databases.
+
+The after-fine-tuning local mode expects a running LoRA inference endpoint. For
+presentation demos, run `training/serve_qwen_lora_colab.py` in Colab and set
+`LOCAL_LORA_API_URL` to the printed Gradio share URL.
+
+Example local setup:
+
+```bash
+brew install ollama
+ollama pull qwen2.5:7b-instruct
+ollama serve
+```
+
+Build the local standards embedding DB once:
+
+```bash
+python -m ingestion.standards_ingestion --embedding-backend local --reset
+```
+
+The first run downloads the local embedding model configured by
+`LOCAL_EMBEDDING_MODEL`. The default is `BAAI/bge-small-en-v1.5`, which is small
+enough for local testing and keeps retrieval free after setup.
+
+Then configure `.env` if you want to change the model, endpoint, or local
+embedding store:
+
+```bash
+LOCAL_LLM_PROVIDER=ollama
+LOCAL_LLM_BASE_URL=http://localhost:11434
+LOCAL_LLM_MODEL=qwen2.5:7b-instruct
+LOCAL_LLM_TIMEOUT=300
+LOCAL_LLM_NUM_CTX=16384
+LOCAL_LLM_NUM_PREDICT=4000
+LOCAL_LORA_OLLAMA_MODEL=qwen-safety-lora
+LOCAL_LORA_API_URL=
+LOCAL_LORA_TIMEOUT=300
+LOCAL_EMBEDDING_MODEL=BAAI/bge-small-en-v1.5
+CHROMA_LOCAL_STANDARDS_DB_PATH=./vectordb/local_standards_db
+LOCAL_STANDARDS_COLLECTION_NAME=local_iso_standards
+```
+
+Note: the open-source draft mode currently retrieves from standards and project
+safety-case examples only. OpenAI mode still uses the existing OpenAI embeddings
+and can use the standards, video, dataset, and example evidence already in your
+main vector DBs.
+
+---
+
+## Running evaluations
+
+### Standards evaluation (OpenAI + local models)
+
+```bash
+python evaluation/evaluate_models.py \
+  --models openai local_base local_lora \
+  --limit 2 \
+  --random-cases 2 \
+  --seed 42
+```
+
+### Video + standards evaluation (paid-path capability)
+
+```bash
+python evaluation/evaluate_video_standard.py
+```
+
+### Optional LoRA fine-tuning for the local model
+
+The `training/` folder contains a Colab-ready workflow to make the local Qwen
+model better at the project's answer style. It uses OpenAI as a teacher to
+generate examples from local retrieved evidence, then fine-tunes Qwen with LoRA.
+
+Start here:
+
+```bash
+python training/generate_sft_dataset.py --limit 2
+```
+
+Then see:
+
+```text
+training/README.md
+```
+
+For deployment, keep `.env`, ISO PDFs, vector DB files, audio files, and
+transcripts out of GitHub. Configure API keys and licensed documents on the
+deployment platform instead.
+
+---
+
+## Metadata schemas
+
+### Video DB chunks
+
+| Field | Example |
+|---|---|
+| `video_id` | `hx7BXih7zx8` |
+| `title` | `Tesla AI Day 2021` |
+| `channel` | `Tesla` |
+| `category` | `perception` |
+| `url` | `https://youtube.com/watch?v=...` |
+| `timestamp_start` | `342` (seconds) |
+| `timestamp_end` | `398` (seconds) |
+| `source` | `youtube` or `local_transcript` |
+
+### Standards DB chunks
+
+| Field | Example |
+|---|---|
+| `standard` | `ISO 26262` |
+| `part` | `Part 4` |
+| `clause` | `6.4.3` |
+| `section_title` | `Hardware architectural design` |
+| `asil_level` | `ASIL-D` |
+| `page` | `47` |
+| `filename` | `iso_26262_part4.pdf` |
+| `source` | `iso_standard` |
+
+---
+
+## Current scope
+
+1. **OpenAI path**: LangChain tool-calling agent with standards + video retrieval and lifecycle completeness review.
+2. **Local path (before fine-tuning)**: Ollama Qwen with local standards retrieval for private/free usage.
+3. **LoRA path (after fine-tuning)**: remote endpoint integration for experiment/demo comparison.
+4. **Evaluation**: standards benchmark plus video+standards benchmark with saved answers, CSV/Markdown reports, and plots.
