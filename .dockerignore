@@ -1,0 +1,12 @@
+.venv
+__pycache__
+*.pyc
+.env
+.git
+.DS_Store
+
+# large/local runtime artifacts
+evaluation/results
+vectordb
+training/generated
+training/lora_adapters
