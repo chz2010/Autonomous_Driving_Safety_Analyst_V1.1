@@ -1,6 +1,28 @@
-# Autonomous Driving Safety Analyst — Ingestion Pipelines
+# Autonomous Driving Safety Analyst
 
-RAG system for autonomous driving safety questions, grounded in YouTube video transcripts and ISO 26262 / ISO 21448 (SOTIF) / ISO 8800 standards.
+LLM-based safety analysis assistant for autonomous driving and ADAS engineering. The system combines Retrieval-Augmented Generation (RAG), ISO standards retrieval, video-evidence retrieval, speech input, multiple model backends, automated evaluation, and containerized AWS deployment.
+
+It is designed to support technical safety-case work products such as HARA screening, ISO 26262 lifecycle analysis, ISO 21448 (SOTIF) reasoning, ISO 8800 AI assurance, V&V planning, and evidence-based engineering recommendations.
+
+## Demo
+
+A short demo video is available here:
+
+[Watch the demo video on Google Drive](https://drive.google.com/file/d/1k46pW3LE86S-YYYViGXYWVvYZTCWSFMo/view?usp=drive_link)
+
+The app was successfully containerized and deployed on AWS ECS/Fargate with Copilot for testing. To avoid continuous cloud costs, the live AWS demo is not always running, but it can be redeployed on request.
+
+## Key features
+
+- Streamlit chat interface for safety analysis, standards Q&A, item safety cases, and dataset/AI safety review.
+- RAG over ISO 26262, ISO 21448 (SOTIF), ISO 8800, dataset profiles, project examples, and video transcripts.
+- LangChain/OpenAI tool-calling agent with specialized retrieval tools and lifecycle completeness review.
+- Optional local Qwen path through Ollama for private/local draft generation.
+- Experimental Qwen LoRA fine-tuning workflow trained on synthetic safety-case examples.
+- Speech-to-text input and optional fixed-voice audio output.
+- Embedded video-evidence playback with timestamped retrieval context.
+- Automated model evaluation with benchmark questions, random automotive systems, rubric scoring, hallucination checks, CSV/Markdown reports, and plots.
+- Dockerized deployment workflow with AWS ECS/Fargate, Copilot, ALB routing, health checks, and secrets management.
 
 ---
 ![Overview Diagram](images/Overview.png)
@@ -282,6 +304,30 @@ training/README.md
 For deployment, keep `.env`, ISO PDFs, vector DB files, audio files, and
 transcripts out of GitHub. Configure API keys and licensed documents on the
 deployment platform instead.
+
+---
+
+## AWS / container deployment
+
+The application includes a Docker and AWS Copilot setup for a production-style
+deployment experiment on ECS/Fargate.
+
+Key deployment files:
+
+- `Dockerfile` — builds the Streamlit application image.
+- `.dockerignore` — excludes secrets, caches, generated outputs, and model artifacts.
+- `copilot/streamlit-app/manifest.yml` — ECS/Fargate service configuration, ALB path routing, health check path, CPU/memory, and AWS secret references.
+
+Typical deployment command:
+
+```bash
+copilot svc deploy -n streamlit-app -e prod
+```
+
+The AWS deployment was used to validate containerization, environment secrets,
+health checks, load balancer routing, and cloud debugging. The live service is
+not kept permanently online to avoid continuous AWS cost; it can be redeployed
+for demonstrations.
 
 ---
 
