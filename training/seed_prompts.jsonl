@@ -1,0 +1,30 @@
+{"id":"lifecycle_lidar","category":"item_safety_case","prompt":"Give me the whole safety lifecycle for developing a LiDAR perception system according to ISO 26262, ISO 21448 (SOTIF), and ISO 8800. Make it detailed and engineering-specific."}
+{"id":"lifecycle_lane_maintaining","category":"item_safety_case","prompt":"Give me the whole safety lifecycle for developing a lane maintaining perception system according to ISO 26262, ISO 21448 (SOTIF), and ISO 8800. Include all item functions in HARA."}
+{"id":"lifecycle_aeb_pedestrian","category":"item_safety_case","prompt":"Create a detailed safety case for an AEB pedestrian detection function using ISO 26262, ISO 21448 (SOTIF), and ISO 8800."}
+{"id":"lifecycle_highway_pilot","category":"item_safety_case","prompt":"Create a complete item safety case for a highway pilot system with lane keeping, ACC, lane change assist, and fallback behavior. Evaluate all functions."}
+{"id":"hara_aeb_pedestrian","category":"hara","prompt":"How should HARA evaluate Severity, Exposure, and Controllability for an AEB pedestrian function in an urban crossing scenario?"}
+{"id":"hara_lane_keeping_rain","category":"hara","prompt":"Perform HARA for an L2 lane keeping system that drifts toward the lane boundary in heavy rain with faded lane markings."}
+{"id":"hara_false_positive_highway","category":"hara","prompt":"Perform HARA for a perception system that falsely detects a stationary obstacle on a highway and triggers hard braking."}
+{"id":"hara_sensor_fusion_disagreement","category":"hara","prompt":"Perform HARA for a sensor fusion disagreement where camera detects a pedestrian but LiDAR confidence is low."}
+{"id":"dataset_ped_cyclist","category":"iso8800_dataset","prompt":"What dataset gaps could make an AI perception model unsafe for detecting pedestrians and cyclists? Relate the answer to ISO 8800 and ISO 21448 (SOTIF)."}
+{"id":"dataset_odd_coverage","category":"iso8800_dataset","prompt":"How should an autonomous-driving team evaluate whether its perception dataset covers the intended ODD for ISO 8800 safety assurance?"}
+{"id":"dataset_release_gate","category":"iso8800_dataset","prompt":"Define ISO 8800-style release gates for a new AI perception model release used in AEB and lane keeping."}
+{"id":"dataset_monitoring_drift","category":"iso8800_dataset","prompt":"Explain how field monitoring, drift detection, and near-miss feedback should be handled for an AI perception model under ISO 8800."}
+{"id":"sotif_triggering_conditions","category":"sotif","prompt":"Identify SOTIF triggering conditions for a camera-based lane detection function and propose engineering mitigations."}
+{"id":"sotif_known_unknown","category":"sotif","prompt":"Explain known unsafe scenarios and unknown unsafe scenarios for an autonomous-driving perception system under ISO 21448 (SOTIF)."}
+{"id":"sotif_odd_boundary","category":"sotif","prompt":"How should ODD boundaries be defined and validated for an L2 lane keeping and ACC system under ISO 21448 (SOTIF)?"}
+{"id":"sotif_foreseeable_misuse","category":"sotif","prompt":"Analyze foreseeable misuse for an L2 driver assistance system and relate it to SOTIF and HMI design."}
+{"id":"failure_robotaxi_night","category":"failure_analysis","prompt":"A robotaxi failed to brake for a pedestrian at night. The pedestrian was partly occluded by a parked vehicle. Analyze using ISO 26262, ISO 21448 (SOTIF), and ISO 8800."}
+{"id":"failure_acc_cut_in","category":"failure_analysis","prompt":"An ACC system did not slow down fast enough when a vehicle cut in at highway speed. Analyze possible failure types and improvements."}
+{"id":"failure_lane_departure_glare","category":"failure_analysis","prompt":"A lane keeping system crossed the lane boundary during low sun glare. Classify the failure and recommend improvements under ISO 26262, SOTIF, and ISO 8800."}
+{"id":"failure_vru_dark_clothing","category":"failure_analysis","prompt":"An AI perception model missed a cyclist wearing dark clothing in rain at dusk. Analyze technical root causes and safety improvements."}
+{"id":"standards_compare","category":"standards_qa","prompt":"Compare ISO 26262, ISO 21448 (SOTIF), and ISO 8800 for an AI-based autonomous-driving perception system."}
+{"id":"standards_mdp","category":"standards_qa","prompt":"Explain the relationship between Markov decision processes and autonomous driving, then relate the safety concerns to ISO 26262, ISO 21448 (SOTIF), and ISO 8800."}
+{"id":"standards_sensor_fusion","category":"standards_qa","prompt":"How should sensor fusion safety be argued across ISO 26262, ISO 21448 (SOTIF), and ISO 8800?"}
+{"id":"standards_ncap_iihs","category":"standards_qa","prompt":"How can NCAP and IIHS assessment evidence support a safety case for ADAS functions, and what are its limitations compared with ISO standards?"}
+{"id":"verification_lidar","category":"verification_validation","prompt":"Build a verification and validation matrix for a LiDAR perception item covering ISO 26262 malfunction tests, SOTIF performance tests, and ISO 8800 AI tests."}
+{"id":"verification_lane","category":"verification_validation","prompt":"Create a V&V plan for lane maintaining perception including scenario tests, fault injection, AI robustness tests, and production/operation controls."}
+{"id":"verification_aeb","category":"verification_validation","prompt":"Create an engineering V&V plan for AEB pedestrian detection with acceptance criteria and evidence artifacts."}
+{"id":"production_operation","category":"production_operation","prompt":"Explain production, operation, service, OTA update, rollback, and field monitoring controls for an AI perception item."}
+{"id":"functional_decomp_generic","category":"function_decomposition","prompt":"For a generic autonomous-driving perception item, decompose the item into functions and show how each function should be screened in HARA, SOTIF, and ISO 8800."}
+{"id":"safety_goals_lidar","category":"safety_goals","prompt":"Derive candidate safety goals and functional safety requirements for a LiDAR perception item after HARA."}

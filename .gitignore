@@ -1,0 +1,31 @@
+.env
+outputs/
+.DS_Store
+__pycache__/
+*.py[cod]
+*.bak
+~$*.pptx
+.venv/
+
+# Licensed/source corpora and generated indexes
+standards_pdfs/*.pdf
+audio/
+transcripts/
+vectordb/
+datasets/
+
+# Fine-tuning artifacts. These may contain retrieved/copyrighted standard text.
+training/generated/
+training/outputs/
+training/lora_adapters/
+training/models/
+*.safetensors
+
+# Generated evaluation outputs
+evaluation/results/
+
+# Local binaries/logs/private files
+.bin/
+build_fail.log
+build_full.log
+*.docx

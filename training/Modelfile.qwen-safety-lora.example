@@ -1,0 +1,5 @@
+FROM ./training/models/qwen_safety_merged
+
+PARAMETER temperature 0.2
+PARAMETER num_ctx 16384
+PARAMETER num_predict 4000
