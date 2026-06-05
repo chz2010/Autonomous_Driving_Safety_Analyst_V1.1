@@ -806,9 +806,14 @@ MODEL_OPTIONS = {
 
 AVAILABLE_MODEL_OPTIONS = [
     "OpenAI - advanced analysis",
-    "Local Qwen - before fine-tuning",
 ]
+LOCAL_BASE_MODEL_LABEL = "Local Qwen - before fine-tuning"
 LORA_MODEL_LABEL = "Local Qwen - after LoRA fine-tuning"
+LOCAL_BASE_UNAVAILABLE_TOOLTIP = (
+    "Currently unavailable in the AWS web deployment. This option needs a running "
+    "Ollama/Qwen server on the same network; the deployed app cannot reach the "
+    "model running on a local laptop."
+)
 LORA_EXPERIMENT_TOOLTIP = (
     "Currently unavailable for selection in the app. This path was used as a "
     "LoRA fine-tuning experiment and is shown for portfolio completeness."
@@ -1157,6 +1162,13 @@ def sidebar_controls() -> tuple[str, bool, list[str], str]:
         )
         st.markdown(
             (
+                f"<div class='model-unavailable' title='{LOCAL_BASE_UNAVAILABLE_TOOLTIP}'>"
+                f"<span>{LOCAL_BASE_MODEL_LABEL}</span>"
+                "<span class='badge'>Local only</span>"
+                "</div>"
+                "<div class='mode-note'>"
+                "Requires Ollama/Qwen running locally; disabled in the hosted AWS demo."
+                "</div>"
                 f"<div class='model-unavailable' title='{LORA_EXPERIMENT_TOOLTIP}'>"
                 f"<span>{LORA_MODEL_LABEL}</span>"
                 "<span class='badge'>Unavailable</span>"

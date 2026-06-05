@@ -1,6 +1,6 @@
 # Autonomous Driving Safety Analyst
 
-LLM-based safety analysis assistant for autonomous driving and ADAS engineering. The system combines Retrieval-Augmented Generation (RAG), ISO standards retrieval, video-evidence retrieval, speech input, multiple model backends, automated evaluation, and containerized AWS deployment.
+LLM-based safety analysis assistant for autonomous driving and ADAS engineering. The system combines Retrieval-Augmented Generation (RAG), ISO standards retrieval, video-evidence retrieval, speech input, multiple model backends, automated evaluation, and containerized local deployment.
 
 It is designed to support technical safety-case work products such as HARA screening, ISO 26262 lifecycle analysis, ISO 21448 (SOTIF) reasoning, ISO 8800 AI assurance, V&V planning, and evidence-based engineering recommendations.
 
@@ -10,7 +10,7 @@ A short demo video is available here:
 
 [Watch the demo video on Google Drive](https://drive.google.com/file/d/1k46pW3LE86S-YYYViGXYWVvYZTCWSFMo/view?usp=drive_link)
 
-The app was successfully containerized and deployed on AWS ECS/Fargate with Copilot for testing. To avoid continuous cloud costs, the live AWS demo is not always running, but it can be redeployed on request.
+The app was successfully containerized and tested on AWS ECS/Fargate during development. The cloud deployment has since been removed to avoid ongoing AWS costs; the project is currently intended to run locally or from a fresh container build.
 
 ## Key features
 
@@ -22,7 +22,7 @@ The app was successfully containerized and deployed on AWS ECS/Fargate with Copi
 - Speech-to-text input and optional fixed-voice audio output.
 - Embedded video-evidence playback with timestamped retrieval context.
 - Automated model evaluation with benchmark questions, random automotive systems, rubric scoring, hallucination checks, CSV/Markdown reports, and plots.
-- Dockerized deployment workflow with AWS ECS/Fargate, Copilot, ALB routing, health checks, and secrets management.
+- Dockerized runtime for local/container deployment, with AWS ECS/Fargate used previously as a validation experiment.
 
 ---
 ![Overview Diagram](images/Overview.png)
@@ -302,32 +302,36 @@ training/README.md
 ```
 
 For deployment, keep `.env`, ISO PDFs, vector DB files, audio files, and
-transcripts out of GitHub. Configure API keys and licensed documents on the
-deployment platform instead.
+transcripts out of GitHub. Configure API keys and licensed documents in your
+local environment or hosting platform instead.
 
 ---
 
-## AWS / container deployment
+## Containerization
 
-The application includes a Docker and AWS Copilot setup for a production-style
-deployment experiment on ECS/Fargate.
+The application includes a Dockerfile for running the Streamlit app in a
+container. During development, the container was also deployed to AWS
+ECS/Fargate with Copilot to validate production-style concerns such as secrets,
+health checks, and load balancer routing. That AWS deployment is no longer
+active and the Copilot configuration is not required for normal local use.
 
 Key deployment files:
 
 - `Dockerfile` — builds the Streamlit application image.
 - `.dockerignore` — excludes secrets, caches, generated outputs, and model artifacts.
-- `copilot/streamlit-app/manifest.yml` — ECS/Fargate service configuration, ALB path routing, health check path, CPU/memory, and AWS secret references.
 
-Typical deployment command:
+Local container run:
 
 ```bash
-copilot svc deploy -n streamlit-app -e prod
+docker build -t autonomous-driving-safety-analyst .
+docker run --env-file .env -p 8501:8501 autonomous-driving-safety-analyst
 ```
 
-The AWS deployment was used to validate containerization, environment secrets,
-health checks, load balancer routing, and cloud debugging. The live service is
-not kept permanently online to avoid continuous AWS cost; it can be redeployed
-for demonstrations.
+Then open:
+
+```text
+http://127.0.0.1:8501
+```
 
 ---
 
