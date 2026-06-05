@@ -7,6 +7,5 @@ __pycache__
 
 # large/local runtime artifacts
 evaluation/results
-vectordb
 training/generated
 training/lora_adapters
