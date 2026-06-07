@@ -27,6 +27,7 @@ Metadata stored per chunk:
 import os
 import re
 import csv
+import io
 import logging
 from pathlib import Path
 from typing import Optional
@@ -100,26 +101,30 @@ def load_video_catalog(catalog_path: Path = VIDEO_CATALOG_PATH) -> list[dict]:
         return TARGET_VIDEOS
 
     videos: list[dict] = []
-    with catalog_path.open(newline="", encoding="utf-8") as csv_file:
-        reader = csv.DictReader(csv_file)
-        for row in reader:
-            url = (row.get("url") or "").strip()
-            video_id = (row.get("video_id") or "").strip()
-            if not url and video_id:
-                url = f"https://www.youtube.com/watch?v={video_id}"
-            if not url:
-                continue
+    try:
+        csv_text = catalog_path.read_text(encoding="utf-8")
+    except UnicodeDecodeError:
+        csv_text = catalog_path.read_text(encoding="cp1252")
 
-            videos.append(
-                {
-                    "url": url,
-                    "channel": (row.get("channel") or "Unknown").strip() or "Unknown",
-                    "category": (row.get("category") or "uncategorized").strip() or "uncategorized",
-                    "tags": (row.get("tags") or "").strip(),
-                    "title": (row.get("title") or "").strip(),
-                    "notes": (row.get("notes") or "").strip(),
-                }
-            )
+    reader = csv.DictReader(io.StringIO(csv_text))
+    for row in reader:
+        url = (row.get("url") or "").strip()
+        video_id = (row.get("video_id") or "").strip()
+        if not url and video_id:
+            url = f"https://www.youtube.com/watch?v={video_id}"
+        if not url:
+            continue
+
+        videos.append(
+            {
+                "url": url,
+                "channel": (row.get("channel") or "Unknown").strip() or "Unknown",
+                "category": (row.get("category") or "uncategorized").strip() or "uncategorized",
+                "tags": (row.get("tags") or "").strip(),
+                "title": (row.get("title") or "").strip(),
+                "notes": (row.get("notes") or "").strip(),
+            }
+        )
 
     return videos or TARGET_VIDEOS
 

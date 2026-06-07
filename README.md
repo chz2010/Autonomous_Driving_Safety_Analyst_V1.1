@@ -21,6 +21,8 @@ The app was successfully containerized and tested on AWS ECS/Fargate during deve
 - Experimental Qwen LoRA fine-tuning workflow trained on synthetic safety-case examples.
 - Speech-to-text input and optional fixed-voice audio output.
 - Embedded video-evidence playback with timestamped retrieval context.
+- Railway RAMS educational-context support through local Whisper transcripts
+  from public IEC 62278 / EN 50126 lecture audio.
 - Automated model evaluation with benchmark questions, random automotive systems, rubric scoring, hallucination checks, CSV/Markdown reports, and plots.
 - Dockerized runtime for local/container deployment, with AWS ECS/Fargate used previously as a validation experiment.
 
@@ -122,6 +124,51 @@ python -m ingestion.video_ingestion \
   --url "https://www.youtube.com/watch?v=xyz" \
   --channel "Waymo" \
   --category "perception"
+```
+
+### Ingest local lecture audio with Whisper
+
+The project can also use local audio files when YouTube captions are missing.
+This is useful for public railway RAMS lectures about IEC 62278 / EN 50126.
+
+Place audio files in a local folder such as:
+
+```text
+railway_audio/
+```
+
+Use YouTube video IDs as filenames where possible:
+
+```text
+railway_audio/tcHg-fMVxr4.mp3
+railway_audio/x2c4AP5ql-c.mp3
+```
+
+Then transcribe:
+
+```bash
+python -m ingestion.whisper_transcription --audio-dir railway_audio --model base
+```
+
+This writes local transcripts to:
+
+```text
+transcripts/{video_id}.txt
+transcripts/{video_id}.vtt
+```
+
+After updating `videos.csv`, rebuild the video vector database:
+
+```bash
+python -m ingestion.video_ingestion --reset
+```
+
+Important framing:
+
+```text
+Railway lecture transcripts are used as public educational context for RAMS
+concepts. They are not official IEC 62278 or EN 50126 standard text and should
+not be presented as compliance evidence.
 ```
 
 ### Ingest specific standard PDFs
@@ -371,3 +418,25 @@ http://127.0.0.1:8501
 2. **Local path (before fine-tuning)**: Ollama Qwen with local standards retrieval for private/free usage.
 3. **LoRA path (after fine-tuning)**: remote endpoint integration for experiment/demo comparison.
 4. **Evaluation**: standards benchmark plus video+standards benchmark with saved answers, CSV/Markdown reports, and plots.
+
+## Relationship To Project 2
+
+This project is the safety-domain knowledge assistant. It answers questions
+from standards, public video transcripts, dataset profiles, and safety-case
+examples.
+
+The second project, **Agentic Document AI Platform for Safety Engineering**,
+is the production-style workflow backend. It handles project workspaces,
+document upload, requirements extraction, quality scoring, traceability,
+workflow tracking, Agent Ops, and reports.
+
+Together:
+
+```text
+Project 1 retrieves and explains safety knowledge.
+Project 2 turns project documents into auditable engineering workflows.
+```
+
+For railway demos, Project 1 can ingest public railway RAMS lecture
+transcripts, while Project 2 can review ETCS or railway-style requirements
+using curated notes as educational context.

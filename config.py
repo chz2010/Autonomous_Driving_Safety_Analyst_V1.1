@@ -58,6 +58,8 @@ class Config:
     # ── Models ───────────────────────────────────────────
     EMBEDDING_MODEL: str = os.getenv("EMBEDDING_MODEL", "text-embedding-3-small")
     LLM_MODEL: str = os.getenv("LLM_MODEL", "gpt-4o")
+    OPENAI_MAX_TOKENS: int = int(os.getenv("OPENAI_MAX_TOKENS", "12000"))
+    OPENAI_TIMEOUT: float = float(os.getenv("OPENAI_TIMEOUT", "300"))
 
     # ── Optional open-source draft model ─────────────────
     LOCAL_LLM_PROVIDER: str = os.getenv("LOCAL_LLM_PROVIDER", "ollama").lower()

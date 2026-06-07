@@ -40,7 +40,9 @@ def _ensure_ffmpeg_on_path() -> None:
     ffmpeg_path = Path(imageio_ffmpeg.get_ffmpeg_exe())
     BIN_DIR.mkdir(exist_ok=True)
     ffmpeg_link = BIN_DIR / "ffmpeg"
-    if not ffmpeg_link.exists():
+    if ffmpeg_link.is_symlink() and ffmpeg_link.resolve(strict=False) != ffmpeg_path:
+        ffmpeg_link.unlink()
+    if not ffmpeg_link.exists() and not ffmpeg_link.is_symlink():
         ffmpeg_link.symlink_to(ffmpeg_path)
     os.environ["PATH"] = f"{BIN_DIR}{os.pathsep}{ffmpeg_path.parent}{os.pathsep}{os.environ.get('PATH', '')}"
 
