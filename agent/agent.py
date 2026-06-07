@@ -1259,6 +1259,12 @@ Rules:
 - When ISO text is relevant, connect it to the video evidence in practical engineering terms.
 - Give ISO 8800 explicit attention whenever the question involves ML model
   behavior, data quality, validation, robustness, or AI lifecycle concerns.
+- For substantive analysis answers, prefer a complete structured response:
+  direct answer, retrieved evidence used, safety/standards relevance, failure
+  modes or gaps, engineering recommendations, verification/validation evidence,
+  and limitations. Do not end mid-sentence, mid-table, or with an unfinished
+  bullet. If the user asks for a full analysis or safety case, prioritize
+  completeness over brevity.
 """
 
 
@@ -1547,7 +1553,7 @@ def build_agent() -> AgentExecutor:
         memory=memory,
         verbose=True,
         handle_parsing_errors=True,
-        max_iterations=6,
+        max_iterations=10,
     )
 
 

@@ -10,6 +10,7 @@ from pathlib import Path
 from textwrap import shorten
 
 import streamlit as st
+from langchain_openai import ChatOpenAI
 
 from agent.agent import (
     _review_lifecycle_answer,
@@ -943,9 +944,56 @@ def run_agent(question: str, reasoning_model: str) -> tuple[str, list[Path]]:
     else:
         agent = get_agent()
         result = agent.invoke({"input": question})
-        answer = _review_lifecycle_answer(question, result["output"])
+        answer = _complete_openai_answer(question, str(result.get("output", "")))
+        answer = _review_lifecycle_answer(question, answer)
     audio_paths = _synthesize_answer_audio(answer, autoplay=False)
     return answer, audio_paths
+
+
+def _complete_openai_answer(question: str, draft_answer: str) -> str:
+    """Turn the agent draft into one complete, polished answer without changing evidence claims."""
+    if not draft_answer.strip():
+        return draft_answer
+    llm = ChatOpenAI(
+        model=cfg.LLM_MODEL,
+        temperature=0,
+        max_tokens=cfg.OPENAI_MAX_TOKENS,
+        timeout=cfg.OPENAI_TIMEOUT,
+        openai_api_key=cfg.OPENAI_API_KEY,
+    )
+    completion_prompt = f"""
+You are polishing the final answer for Autonomous Driving Safety Analyst.
+
+Use the draft below as the evidence-grounded source. Preserve its technical
+claims, citations, standards caveats, and uncertainty. Do not invent new exact
+ISO clause numbers or evidence that is not in the draft.
+
+If the draft is incomplete, rewrite it into a complete answer. If it is already
+complete, improve clarity and structure without shortening it.
+
+For substantive analysis questions, the final answer should include:
+- direct answer
+- evidence used
+- safety and standards relevance
+- gaps or failure modes
+- engineering recommendations
+- verification/validation or release criteria
+- limitations
+
+Do not mention this polishing step. Do not end mid-sentence, mid-list, or
+mid-table.
+
+User question:
+{question}
+
+Draft answer:
+{draft_answer}
+"""
+    polished = llm.invoke([("human", completion_prompt)])
+    content = getattr(polished, "content", "").strip()
+    if not content:
+        return draft_answer
+    return content
 
 
 def format_video_timestamp(seconds: float | int | str) -> str:
@@ -1396,12 +1444,12 @@ def render_chat(
         render_scenario_form(voice_enabled, selected_standards, reasoning_model)
 
     avatar_by_role = {
-        "user": str(USER_AVATAR_IMAGE),
-        "assistant": str(ASSISTANT_AVATAR_IMAGE),
+        "user": str(USER_AVATAR_IMAGE) if USER_AVATAR_IMAGE.exists() else None,
+        "assistant": str(ASSISTANT_AVATAR_IMAGE) if ASSISTANT_AVATAR_IMAGE.exists() else None,
     }
     for message in chat["messages"]:
         role = message["role"]
-        with st.chat_message(role, avatar=avatar_by_role.get(role, str(ASSISTANT_AVATAR_IMAGE))):
+        with st.chat_message(role, avatar=avatar_by_role.get(role)):
             st.markdown(message["content"])
             render_video_evidence_player(message.get("video_evidence", []))
             for audio_path in message.get("audio_paths", []):
