@@ -23,6 +23,8 @@ The app was successfully containerized and tested on AWS ECS/Fargate during deve
 - Embedded video-evidence playback with timestamped retrieval context.
 - Railway RAMS educational-context support through local Whisper transcripts
   from public IEC 62278 / EN 50126 lecture audio.
+- Read-only MCP server exposing the standards/document and video transcript
+  vector databases as reusable retrieval tools for future agentic projects.
 - Automated model evaluation with benchmark questions, random automotive systems, rubric scoring, hallucination checks, CSV/Markdown reports, and plots.
 - Dockerized runtime for local/container deployment, with AWS ECS/Fargate used previously as a validation experiment.
 
@@ -35,6 +37,7 @@ Autonomous_Driving_Safety_Analyst/
 │
 ├── config.py                    # Centralised settings (loaded from .env)
 ├── ingest_all.py                # Master runner — executes both pipelines
+├── mcp_server.py                # Read-only MCP tools over standards/video DBs
 ├── requirements.txt
 ├── .env.example                 # Copy to .env and fill in your keys
 │
@@ -198,6 +201,96 @@ python utils/db_inspector.py --db standards \
   --query "validation of ML models" \
   --filter "ISO 8800"
 ```
+
+---
+
+## MCP standards and evidence server
+
+Project 1 can also run as a read-only MCP knowledge service. This lets Project
+2 or a future Project 3 agentic co-pilot use the existing standards and video
+databases without copying them into another repository.
+
+The MCP server exposes these tools:
+
+```text
+get_knowledge_base_status
+search_safety_standards
+search_video_evidence
+search_combined_safety_context
+```
+
+Recommended role in the full portfolio:
+
+```text
+Project 1: Standards and video-evidence knowledge service
+Project 2: Document AI, requirements engineering, traceability, and AgentOps
+Project 3: Agentic functional safety co-pilot that calls Project 1 and 2 tools
+```
+
+```mermaid
+flowchart LR
+    subgraph P1["Project 1: Autonomous Driving Safety Analyst"]
+        SDB[(Standards / Document DB)]
+        VDB[(Video Transcript DB)]
+        MCP[MCP Standards and Evidence Server]
+        SDB --> MCP
+        VDB --> MCP
+    end
+
+    subgraph P2["Project 2: Agentic Document AI Platform"]
+        REQ[Requirements Engineering]
+        TRACE[Traceability and Knowledge Graph]
+        OPS[AgentOps and Evaluation]
+    end
+
+    subgraph P3["Project 3: Future Safety Co-Pilot"]
+        AGENT[Agentic Functional Safety Assistant]
+    end
+
+    MCP -->|search_safety_standards| REQ
+    MCP -->|search_video_evidence| TRACE
+    MCP -->|search_combined_safety_context| AGENT
+    REQ --> AGENT
+    TRACE --> AGENT
+    OPS --> AGENT
+```
+
+Run the MCP server locally:
+
+```bash
+python mcp_server.py
+```
+
+Test it with the MCP Inspector:
+
+```bash
+npx -y @modelcontextprotocol/inspector \
+  .venv/bin/python mcp_server.py
+```
+
+Useful test queries:
+
+```text
+search_safety_standards:
+  query = "What evidence is needed for ISO 26262 item definition and HARA?"
+  standard = "ISO 26262"
+
+search_video_evidence:
+  query = "perception failure in rain or low visibility"
+  failure_cases_only = true
+
+search_combined_safety_context:
+  query = "How should an ADAS system handle degraded perception at night?"
+```
+
+Notes:
+
+- `search_safety_standards` can use `embedding_backend="openai"` or
+  `embedding_backend="local"` if the local standards vector database was built.
+- `search_video_evidence` uses the video transcript vector database and requires
+  the OpenAI embedding setup used by the video ingestion pipeline.
+- Railway lecture transcripts are educational context only and should not be
+  presented as official IEC 62278 / EN 50126 standard text.
 
 ---
 
