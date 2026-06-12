@@ -39,3 +39,4 @@ pydantic==2.13.4
 streamlit==1.39.0
 gradio_client==1.13.3
 mcp[cli]>=1.9.0
+pytest>=8.0.0

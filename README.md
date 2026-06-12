@@ -25,6 +25,9 @@ The app was successfully containerized and tested on AWS ECS/Fargate during deve
   from public IEC 62278 / EN 50126 lecture audio.
 - Read-only MCP server exposing the standards/document and video transcript
   vector databases as reusable retrieval tools for future agentic projects.
+- Optional conversation memory API for storing conversation modes, selected
+  standards, model choices, user/assistant messages, and retrieved-source
+  summaries.
 - Automated model evaluation with benchmark questions, random automotive systems, rubric scoring, hallucination checks, CSV/Markdown reports, and plots.
 - Dockerized runtime for local/container deployment, with AWS ECS/Fargate used previously as a validation experiment.
 
@@ -38,6 +41,7 @@ Autonomous_Driving_Safety_Analyst/
 ├── config.py                    # Centralised settings (loaded from .env)
 ├── ingest_all.py                # Master runner — executes both pipelines
 ├── mcp_server.py                # Read-only MCP tools over standards/video DBs
+├── conversation_api.py          # Optional FastAPI conversation memory service
 ├── requirements.txt
 ├── .env.example                 # Copy to .env and fill in your keys
 │
@@ -291,6 +295,39 @@ Notes:
   the OpenAI embedding setup used by the video ingestion pipeline.
 - Railway lecture transcripts are educational context only and should not be
   presented as official IEC 62278 / EN 50126 standard text.
+
+---
+
+## Conversation memory API
+
+Project 1 can run a lightweight conversation API alongside the Streamlit UI.
+This keeps the first project focused as a knowledge assistant while still
+supporting follow-up questions, selected standards, model mode, and retrieved
+source summaries.
+
+Endpoints:
+
+```text
+POST /conversations
+GET  /conversations/{conversation_id}
+POST /conversations/{conversation_id}/messages
+GET  /conversations/{conversation_id}/history
+```
+
+Run it locally:
+
+```bash
+uvicorn conversation_api:app --reload --port 8010
+```
+
+Open:
+
+```text
+http://127.0.0.1:8010/docs
+```
+
+Conversation records are saved under `outputs/conversations/`, which is ignored
+by git.
 
 ---
 
